@@ -37,5 +37,30 @@ The workflow will show:
 - ✓ Pass/fail status for each check
 - ⚠️ Warnings for missing components
 - Estimated parameter count
+## Latest Results
 
+### Model Performance
+- Model Accuracy: 99.41%%
+
+### Architecture Check Results
+- BatchNorm: True
+- Dropout: True
+- FC/GAP: True
+- Total Parameters: 15816
+
+- Model Accuracy: 99.41%%
+
+### Architecture Check Results
+- BatchNorm: True
+- Dropout: True
+- FC/GAP: True
+- Total Parameters: 15816
+
+- Model Accuracy: 99.41%%
+
+### Architecture Check Results
+- BatchNorm: True
+- Dropout: True
+- FC/GAP: True
+- Total Parameters: Parameters:
 
