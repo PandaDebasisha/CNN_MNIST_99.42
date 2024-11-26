@@ -39,4 +39,3 @@ The workflow will show:
 - Estimated parameter count
 
 
-## Latest Results
