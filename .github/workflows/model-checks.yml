@@ -1,0 +1,89 @@
+name: ML Model Architecture Checks
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  model-architecture-check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: List installed packages
+      run: |
+        pip list
+        
+    - name: Check Python version and CUDA availability
+      run: |
+        python -c "import sys; print(f'Python {sys.version}')"
+        python -c "import torch; print(f'PyTorch {torch.__version__}')"
+        python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
+        
+    - name: Run Model Architecture Checks
+      run: |
+        python .github/scripts/check_model_architecture.py > arch_check_output.txt
+        echo "HAS_BATCHNORM=$(grep 'BatchNorm:' arch_check_output.txt | awk '{print $3}')" >> $GITHUB_ENV
+        echo "HAS_DROPOUT=$(grep 'Dropout:' arch_check_output.txt | awk '{print $3}')" >> $GITHUB_ENV
+        echo "HAS_FC_GAP=$(grep 'FC/GAP:' arch_check_output.txt | awk '{print $3}')" >> $GITHUB_ENV
+        echo "TOTAL_PARAMS=$(grep 'Total parameters:' model_output.txt | awk '{print $3}' | tr -d ',')" >> $GITHUB_ENV
+
+    - name: Run Model and Get Accuracy
+      run: |
+        python model.py > model_output.txt
+        echo "MODEL_ACC=$(grep 'Model accuracy' model_output.txt | awk '{print $3}')" >> $GITHUB_ENV
+        echo "TOTAL_PARAMS=$(grep 'Total parameters:' model_output.txt | awk '{print $3}' | tr -d ',')" >> $GITHUB_ENV
+
+    - name: Update README with Results
+      run: |
+        # Create results section
+        results_section="## Latest Results\n\n"
+        results_section+="### Model Performance\n"
+        results_section+="- Model Accuracy: ${MODEL_ACC}%\n\n"
+        results_section+="### Architecture Check Results\n"
+        results_section+="- BatchNorm: ${HAS_BATCHNORM}\n"
+        results_section+="- Dropout: ${HAS_DROPOUT}\n"
+        results_section+="- FC/GAP: ${HAS_FC_GAP}\n"
+        results_section+="- Total Parameters: ${TOTAL_PARAMS:=0}\n"
+        
+        # Update the README
+        sed -i "/## Latest Results/,/##/c\\${results_section}" README.md
+        
+    - name: Commit README changes
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add README.md
+        git commit -m "Update README with latest results (Accuracy: ${MODEL_ACC}%, Params: ${TOTAL_PARAMS})" || echo "No changes to commit"
+        
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}
+
+    - name: Cache pip packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
