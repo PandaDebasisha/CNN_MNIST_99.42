@@ -31,3 +31,12 @@ An intelligent GitHub Actions workflow that automatically analyzes ML model arch
 ## 🛠️ Installation
 
 1. Git Clone the repository:
+### Check Results
+
+The workflow will show:
+- ✓ Pass/fail status for each check
+- ⚠️ Warnings for missing components
+- Estimated parameter count
+
+
+## Latest Results
