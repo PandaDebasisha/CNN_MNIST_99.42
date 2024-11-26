@@ -40,6 +40,14 @@ The workflow will show:
 ## Latest Results
 
 ### Model Performance
+- Model Accuracy: 99.49%%
+
+### Architecture Check Results
+- BatchNorm: True
+- Dropout: True
+- FC/GAP: True
+- Total Parameters: 15418
+
 - Model Accuracy: 99.41%%
 
 ### Architecture Check Results
