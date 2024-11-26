@@ -31,16 +31,13 @@ class Net(nn.Module):
 
     def forward(self, x):
         x = self.pool1(F.relu(self.conv2(F.relu(self.conv1(x)))))
-
         x = self.bn1(x)
         x = self.pool2(self.bn2(F.relu(self.conv4(F.relu(self.conv3(x))))))
         x = self.dropout1(x)
         #x = self.bn1(x)
         x = self.bn3(F.relu(self.conv7(self.conv6(F.relu(self.conv5(x))))))
         x = self.dropout2(x)
-        #x = F.relu(self.conv8(F.relu(self.conv7(x))))
         x = self.fc(x)
-        #x = self.gap(x)
         x = x.view(-1, 10)
         return F.log_softmax(x)
 
